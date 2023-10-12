@@ -188,6 +188,7 @@ export function GasTankModule() {
       const chainInfo = await sdk.safe.getChainInfo()
       console.table({info, chainInfo})
       const convertedTxs = convertToProposedTransactions(enableGTJSON, chainInfo);
+      // @ts-ignore
       await sdk.txs.send({txs: [...convertedTxs].map(({ raw }) => raw) })
     } catch (e) {
       console.error('GT Manager', e)
