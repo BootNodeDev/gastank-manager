@@ -8,6 +8,7 @@ import {useSafeAppsSDK} from '@safe-global/safe-apps-react-sdk'
 import {ChainInfo} from "@safe-global/safe-apps-sdk";
 import {getAddress, encodeFunctionData} from "viem";
 import {AbiFunction} from "abitype";
+import {GAS_TANK_MODULE_ADDRESS} from "../constants";
 
 // This function is used to apply some parsing to some value types
 export const parseInputValue = (input: any, value: string): any => {
@@ -161,7 +162,7 @@ export function GasTankModule() {
               "payable": false
             },
             "contractInputsValues": {
-              "module": "0x150EfE6b6E093D625313cAe5E7083a4C57fb9BA0"
+              "module": GAS_TANK_MODULE_ADDRESS,
             }
           }
         ]
