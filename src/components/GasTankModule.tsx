@@ -79,7 +79,7 @@ const convertToProposedTransactions = (
     transactions: Array<Record<string, any>>
   },
   chainInfo: ChainInfo,
-): {id: number; raw: Record<string, string>} | Array<{id: number; raw: Record<string, string>}> => {
+): { id: number; raw: Record<string, string> } | Array<{ id: number; raw: Record<string, string> }> => {
   return batchFile.transactions.map((transaction, index) => {
     if (transaction.data) {
       return {
@@ -190,7 +190,58 @@ export function GasTankModule() {
       console.table({info, chainInfo})
       const convertedTxs = convertToProposedTransactions(enableGTJSON, chainInfo);
       // @ts-ignore
-      await sdk.txs.send({txs: [...convertedTxs].map(({ raw }) => raw) })
+      await sdk.txs.send({txs: [...convertedTxs].map(({raw}) => raw)})
+    } catch (e) {
+      console.error('GT Manager', e)
+    }
+  }
+
+  const [delegate, setDelegate] = useState<string>('')
+
+  const handleAddDelegate = async () => {
+    if (!delegate) {
+      return
+    }
+
+    try {
+      const info = await sdk.safe.getInfo()
+      const chainInfo = await sdk.safe.getChainInfo()
+      const convertedTxs = convertToProposedTransactions(addChecksum({
+        "version": "1.0",
+        chainId: `${chainId}`,
+        "createdAt": Date.now(),
+        "meta": {
+          "name": "add-delegate-gasTank-module",
+          "description": "AddDelegate GasTank Module",
+          "txBuilderVersion": "1.16.3",
+          "createdFromSafeAddress": address,
+          "createdFromOwnerAddress": "",
+        },
+        "transactions": [
+          {
+            "to": GAS_TANK_MODULE_ADDRESS,
+            "value": "0",
+            "data": null,
+            "contractMethod": {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_delegate",
+                  "type": "address"
+                }
+              ],
+              "name": "addDelegate",
+              "payable": false,
+            },
+            "contractInputsValues": {
+              "_delegate": delegate,
+            }
+          }
+        ]
+      }), chainInfo);
+
+      // @ts-ignore
+      await sdk.txs.send({txs: [...convertedTxs].map(({raw}) => raw)})
     } catch (e) {
       console.error('GT Manager', e)
     }
@@ -203,12 +254,16 @@ export function GasTankModule() {
       <br />
       <button onClick={handleRegenerate}>Regenerate JSON</button>
       <pre>
-      {enableGTJSON ? JSON.stringify(enableGTJSON, null, 2) : null}
-    </pre>
+        {enableGTJSON ? JSON.stringify(enableGTJSON, null, 2) : null}
+      </pre>
       <br />
       {enableGTJSON ? <button onClick={handleDownload}>Download JSON</button> : null}
       <br />
       {enableGTJSON ? <button onClick={handleEnable}>Enable GasTank Module</button> : null}
+      <br />
+      <hr />
+      <input type="text" value={delegate} onChange={(e) => setDelegate(e.target.value)} />
+      <button onClick={handleAddDelegate}>Add Delegate</button>
     </div>
   )
 }
