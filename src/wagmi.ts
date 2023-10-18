@@ -1,14 +1,14 @@
 import {getDefaultConfig} from 'connectkit'
 import {configureChains, Connector, createConfig} from 'wagmi'
 import {SafeConnector} from 'wagmi/connectors/safe'
-import {goerli, mainnet} from "@wagmi/chains";
+import {goerli, mainnet, optimism} from "@wagmi/chains";
 import {publicProvider} from "wagmi/providers/public";
 import {MetaMaskConnector} from "@wagmi/connectors/metaMask";
 import {InjectedConnector} from "@wagmi/connectors/injected";
 
 const walletConnectProjectId = 'dd643f67fa8d1b7bdd83e4c8965b911d'
 
-const defaultChains = [goerli, mainnet];
+const defaultChains = [goerli, mainnet, optimism];
 const { chains, publicClient } = configureChains(defaultChains, [publicProvider()]);
 const connectors: Connector[] = [
   new SafeConnector({ chains }),
