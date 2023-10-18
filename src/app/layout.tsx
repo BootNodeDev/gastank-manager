@@ -1,7 +1,7 @@
 import {Providers} from './providers'
 
 export const metadata = {
-  title: 'wagmi',
+  title: 'GasTank Manager',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
