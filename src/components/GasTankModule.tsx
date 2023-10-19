@@ -1,14 +1,29 @@
 'use client'
 
-import {useAccount, useChainId, useEnsName} from 'wagmi'
+import {useAccount, useChainId} from 'wagmi'
 import {useAutoConnect} from "../hooks/useAutoConnect";
 import {useState} from "react";
-import {addChecksum, downloadObjectAsJson} from "../utils/checksum";
+import {addChecksum} from "../utils/checksum";
 import {useSafeAppsSDK} from '@safe-global/safe-apps-react-sdk'
 import {ChainInfo} from "@safe-global/safe-apps-sdk";
 import {getAddress, encodeFunctionData} from "viem";
 import {AbiFunction} from "abitype";
 import {GAS_TANK_MODULE_ADDRESS} from "../constants";
+import {
+  Center,
+  Box,
+  Button,
+  Code,
+  Container,
+  Flex,
+  Input,
+  Stack,
+  Text,
+  useColorModeValue
+} from "@chakra-ui/react";
+import {Link} from "@chakra-ui/next-js";
+import {ExternalLinkIcon} from "@chakra-ui/icons";
+import {goerli, mainnet, optimism} from "@wagmi/chains";
 
 // This function is used to apply some parsing to some value types
 export const parseInputValue = (input: any, value: string): any => {
@@ -79,7 +94,13 @@ const convertToProposedTransactions = (
     transactions: Array<Record<string, any>>
   },
   chainInfo: ChainInfo,
-): { id: number; raw: Record<string, string> } | Array<{ id: number; raw: Record<string, string> }> => {
+): {
+  id: number;
+  raw: Record<string, string>
+} | Array<{
+  id: number;
+  raw: Record<string, string>
+}> => {
   return batchFile.transactions.map((transaction, index) => {
     if (transaction.data) {
       return {
@@ -126,69 +147,96 @@ const convertToProposedTransactions = (
   })
 }
 
+const chainExplorer: Record<string, string> = {
+  '1': mainnet.blockExplorers.default.url,
+  '10': optimism.blockExplorers.default.url,
+  '5': goerli.blockExplorers.default.url,
+}
+
 export function GasTankModule() {
   const {address} = useAccount()
   const chainId = useChainId()
-  const {data: ensName} = useEnsName({address})
   const {sdk} = useSafeAppsSDK()
   useAutoConnect()
 
-  const [enableGTJSON, setEnableGTJSON] = useState(() => {
-      const gtJSON = {
-        "version": "1.0",
-        chainId: `${chainId}`,
-        "createdAt": Date.now(),
-        "meta": {
-          "name": "enable-gasTank-module",
-          "description": "Enable GasTank Module",
-          "txBuilderVersion": "1.16.2",
-          "createdFromSafeAddress": address,
-          "createdFromOwnerAddress": "",
-        },
-        "transactions": [
-          {
-            "to": address,
-            "value": "0",
-            "data": null,
-            "contractMethod": {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "module",
-                  "type": "address"
-                }
-              ],
-              "name": "enableModule",
-              "payable": false
-            },
-            "contractInputsValues": {
-              "module": GAS_TANK_MODULE_ADDRESS,
+  const enableGtJson = addChecksum({
+    "version": "1.0",
+    chainId: `${chainId}`,
+    "createdAt": Date.now(),
+    "meta": {
+      "name": "enable-gasTank-module",
+      "description": "Enable GasTank Module",
+      "txBuilderVersion": "1.16.3",
+      "createdFromSafeAddress": address,
+      "createdFromOwnerAddress": "",
+    },
+    "transactions": [
+      {
+        "to": address,
+        "value": "0",
+        "data": null,
+        "contractMethod": {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address"
             }
-          }
-        ]
+          ],
+          "name": "enableModule",
+          "payable": false
+        },
+        "contractInputsValues": {
+          "module": GAS_TANK_MODULE_ADDRESS,
+        }
       }
+    ]
+  })
 
-      return addChecksum(gtJSON)
+  const [delegate, setDelegate] = useState<string>('')
+  const [addDelegateGTJSON, setAddDelegateGTJSON] = useState(() => {
+    const addDelegateGtJson = {
+      "version": "1.0",
+      chainId: `${chainId}`,
+      "createdAt": Date.now(),
+      "meta": {
+        "name": "add-delegate-gasTank-module",
+        "description": "AddDelegate GasTank Module",
+        "txBuilderVersion": "1.16.3",
+        "createdFromSafeAddress": address,
+        "createdFromOwnerAddress": "",
+      },
+      "transactions": [
+        {
+          "to": GAS_TANK_MODULE_ADDRESS,
+          "value": "0",
+          "data": null,
+          "contractMethod": {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "_delegate",
+                "type": "address"
+              }
+            ],
+            "name": "addDelegate",
+            "payable": false,
+          },
+          "contractInputsValues": {
+            "_delegate": delegate,
+          }
+        }
+      ]
     }
-  )
 
-  const handleRegenerate = async () => {
-    setEnableGTJSON((gtJSON: Record<string, any>) => addChecksum({
-      ...gtJSON,
-      createdAt: Date.now(),
-    }))
-  }
-
-  const handleDownload = () => {
-    downloadObjectAsJson(enableGTJSON)
-  }
+    return addChecksum(addDelegateGtJson)
+  })
 
   const handleEnable = async () => {
     try {
-      const info = await sdk.safe.getInfo()
       const chainInfo = await sdk.safe.getChainInfo()
-      console.table({info, chainInfo})
-      const convertedTxs = convertToProposedTransactions(enableGTJSON, chainInfo);
+      const convertedTxs = convertToProposedTransactions(enableGtJson, chainInfo);
+
       // @ts-ignore
       await sdk.txs.send({txs: [...convertedTxs].map(({raw}) => raw)})
     } catch (e) {
@@ -196,7 +244,16 @@ export function GasTankModule() {
     }
   }
 
-  const [delegate, setDelegate] = useState<string>('')
+  const handleDelegateUpdate = (e: any) => {
+    const {value} = e.target
+
+    setDelegate(value)
+    setAddDelegateGTJSON((addDelegateGtJson: Record<string, any>) => addChecksum({
+      ...addDelegateGtJson,
+      createdAt: Date.now(),
+      delegate: value,
+    }))
+  }
 
   const handleAddDelegate = async () => {
     if (!delegate) {
@@ -206,39 +263,7 @@ export function GasTankModule() {
     try {
       const info = await sdk.safe.getInfo()
       const chainInfo = await sdk.safe.getChainInfo()
-      const convertedTxs = convertToProposedTransactions(addChecksum({
-        "version": "1.0",
-        chainId: `${chainId}`,
-        "createdAt": Date.now(),
-        "meta": {
-          "name": "add-delegate-gasTank-module",
-          "description": "AddDelegate GasTank Module",
-          "txBuilderVersion": "1.16.3",
-          "createdFromSafeAddress": address,
-          "createdFromOwnerAddress": "",
-        },
-        "transactions": [
-          {
-            "to": GAS_TANK_MODULE_ADDRESS,
-            "value": "0",
-            "data": null,
-            "contractMethod": {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "_delegate",
-                  "type": "address"
-                }
-              ],
-              "name": "addDelegate",
-              "payable": false,
-            },
-            "contractInputsValues": {
-              "_delegate": delegate,
-            }
-          }
-        ]
-      }), chainInfo);
+      const convertedTxs = convertToProposedTransactions(addDelegateGTJSON, chainInfo);
 
       // @ts-ignore
       await sdk.txs.send({txs: [...convertedTxs].map(({raw}) => raw)})
@@ -247,23 +272,37 @@ export function GasTankModule() {
     }
   }
 
+  // @ts-ignore
   return (
-    <div>
-      {ensName ?? address}
-      {ensName ? ` (${address})` : null}
-      <br />
-      <button onClick={handleRegenerate}>Regenerate JSON</button>
-      <pre>
-        {enableGTJSON ? JSON.stringify(enableGTJSON, null, 2) : null}
-      </pre>
-      <br />
-      {enableGTJSON ? <button onClick={handleDownload}>Download JSON</button> : null}
-      <br />
-      {enableGTJSON ? <button onClick={handleEnable}>Enable GasTank Module</button> : null}
-      <br />
-      <hr />
-      <input type="text" value={delegate} onChange={(e) => setDelegate(e.target.value)} />
-      <button onClick={handleAddDelegate}>Add Delegate</button>
-    </div>
+    <>
+      <Stack spacing='48px'>
+        <Center>
+          <Button colorScheme="teal" onClick={handleEnable} maxW="30%">Enable GasTank Module</Button>
+        </Center>
+        <Flex minWidth='max-content' alignItems='center' gap='2'>
+          <Input type="text" value={delegate} onChange={handleDelegateUpdate} />
+          <Button colorScheme="teal" onClick={handleAddDelegate}>Add Delegate</Button>
+        </Flex>
+        <Box
+          bg={useColorModeValue('gray.50', 'gray.900')}
+          color={useColorModeValue('gray.700', 'gray.200')}>
+          <Container
+            as={Stack}
+            maxW={'6xl'}
+            py={4}
+            direction={{ base: 'column', md: 'row' }}
+            spacing={4}
+            justify={{ base: 'center', md: 'space-between' }}
+            align={{ base: 'center', md: 'center' }}>
+            <Text>Module Address</Text>
+            <Stack direction={'row'} spacing={6}>
+              <Code><Text fontSize="large">{GAS_TANK_MODULE_ADDRESS}</Text></Code>
+              <Box><Link href={`${chainExplorer[chainId]}/address/${GAS_TANK_MODULE_ADDRESS}`}
+                         target="_blank"><ExternalLinkIcon /></Link></Box>
+            </Stack>
+          </Container>
+        </Box>
+      </Stack>
+    </>
   )
 }
