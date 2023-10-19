@@ -14,7 +14,6 @@ export default function Page() {
         <Box margin='12px'>
           <Stack direction={['column', 'row']} spacing='12px'>
             <Heading>Manage GasTank Module for</Heading>
-            <Spacer />
             <ConnectKitButton />
           </Stack>
         </Box>
