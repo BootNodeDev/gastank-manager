@@ -22,11 +22,11 @@ Tank Safe**. The **delegate** will be able to request the **Gas Tank Safe** to p
 
 ### Setup
 
-1. [Create two Safes](https://safe.bootnode.dev/welcome).
-   1.1. Safe paying for gas (**Gas Tank Safe**)
-   1.2. Safe that won't pay for gas (**Regular Safe**)
-2. Enable the GasTank Module in the **Gas Tank Safe**.
-    - To do this, you can use the [GasTank Manager Safe App](https://gastank-manager.bootnode.dev/) and click "Enable
+1. [Create two Safes](https://safe.bootnode.dev/welcome):
+   - a Safe paying for gas (**Gas Tank Safe**);
+   - a Safe that won't pay for gas (**Regular Safe**).
+3. Enable the GasTank Module in the **Gas Tank Safe**.
+   - To do this, you can use the [GasTank Manager Safe App](https://gastank-manager.bootnode.dev/) and click "Enable
       GasTank Module".
 
 | add Safe App                                  | Safe App view                                 |
@@ -52,24 +52,9 @@ Tank Safe**. The **delegate** will be able to request the **Gas Tank Safe** to p
 6. From the dropdown menu "GasTank to use", select the **Gas Tank Safe**, which should appear since the connected user
    was delegated in step 3 of the Setup process.
 
-<div style="display: flex; align-items: center; justify-content: center;">
-<table style="max-width: 65%;">
-    <thead>
-        <tr>
-            <th>Transaction Modal</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                <kbd>
-                <img src="https://hackmd.io/_uploads/SkX34Z4Ga.png" />
-                </kbd>
-            </td>
-        </tr>
-    </tbody>
-</table>
-</div>
+| Transaction Modal                                                   |
+|---------------------------------------------------------------------|
+| <img src="https://hackmd.io/_uploads/SkX34Z4Ga.png" height="450" /> |
 
 6. Execute: only signatures will be required, no transactions requiring gas from the **Owner** account.
 
