@@ -1,17 +1,78 @@
-This is a [wagmi](https://wagmi.sh) + [ConnectKit](https://docs.family.co/connectkit) + [Next.js](https://nextjs.org) project bootstrapped with [`create-wagmi`](https://github.com/wagmi-dev/wagmi/tree/main/packages/create-wagmi)
+# Gas Tank Manager
 
-# Getting Started
+This repo hosts the code for the Gas Tank Manager Safe App.
 
-Run `npm run dev` in your terminal, and then open [localhost:3000](http://localhost:3000) in your browser.
 
-Once the webpage has loaded, changes made to files inside the `src/` directory (e.g. `src/pages/index.tsx`) will automatically update the webpage.
+## How To Use Gas Tank
+ - [Requirements](#requirements)
+ - [Setup](#setup)
+ - [Usage](#usage)
 
-# Learn more
+---
 
-To learn more about [Next.js](https://nextjs.org), [ConnectKit](https://docs.family.co/connectkit) or [wagmi](https://wagmi.sh), check out the following resources:
+### Requirements
 
-- [wagmi Documentation](https://wagmi.sh) – learn about wagmi Hooks and API.
-- [wagmi Examples](https://wagmi.sh/examples/connect-wallet) – a suite of simple examples using wagmi.
-- [ConnectKit Documentation](https://docs.family.co/connectkit) – learn more about ConnectKit (configuration, theming, advanced usage, etc).
-- [Next.js Documentation](https://nextjs.org/docs) learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To demonstrate the feature, we'll use two Safes.
+
+One will serve as a **Gas Tank**, while the other (a **Regular Safe**) will execute its transaction without requiring
+signers to hold gas token to pay for the network fee. The fee will be paid from the **Gas Tank Safe**.
+
+You'll also need a wallet that will function as the **Owner** of the **Regular Safe** and as *delegate* of the **Gas
+Tank Safe**. The **delegate** will be able to request the **Gas Tank Safe** to pay for the gas on its behalf.
+
+### Setup
+
+1. [Create two Safes](https://safe.bootnode.dev/welcome).
+   1.1. Safe paying for gas (**Gas Tank Safe**)
+   1.2. Safe that won't pay for gas (**Regular Safe**)
+2. Enable the GasTank Module in the **Gas Tank Safe**.
+    - To do this, you can use the [GasTank Manager Safe App](https://gastank-manager.bootnode.dev/) and click "Enable
+      GasTank Module".
+
+| add Safe App                                  | Safe App view                                 |
+|-----------------------------------------------|-----------------------------------------------|
+| ![](https://hackmd.io/_uploads/HyoON-NG6.png) | ![](https://hackmd.io/_uploads/ry0SmWNMp.png) |
+
+<span id="owner"></span>
+
+3. Add the **Owner** of the **Regular Safe** as a *delegate* of the GasTank Module in the **Gas Tank Safe**.
+    - This can be done through the [GasTank Manager Safe App](https://gastank-manager.bootnode.dev/) by pasting the
+      owner's address in the input field and clicking "Add Delegate".
+4. Transfer some ETH (or the native gas token) to the **Gas Tank Safe** to ensure it has sufficient funds to pay for the
+   transactions.
+
+### Usage
+
+1. Access your **Regular Safe**.
+2. Connect to it using the _delegated_ owner ([Setup.3](#owner)).
+3. Trigger a transaction execution. For example:
+    - add an owner (`0x000000000000000000000000000000000000dEaD`)
+    - change confirmation policy
+5. In the execution modal, choose "Gas Tank".
+6. From the dropdown menu "GasTank to use", select the **Gas Tank Safe**, which should appear since the connected user
+   was delegated in step 3 of the Setup process.
+
+<div style="display: flex; align-items: center; justify-content: center;">
+<table style="max-width: 65%;">
+    <thead>
+        <tr>
+            <th>Transaction Modal</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <kbd>
+                <img src="https://hackmd.io/_uploads/SkX34Z4Ga.png" />
+                </kbd>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+6. Execute: only signatures will be required, no transactions requiring gas from the **Owner** account.
+
+| (I) Safe's Tx                                 | (II) Gelato's Fee                             | (III) Tx Execution                            |
+|-----------------------------------------------|-----------------------------------------------|-----------------------------------------------|
+| ![](https://hackmd.io/_uploads/BJ-GrZ4fp.png) | ![](https://hackmd.io/_uploads/rybGBbNz6.png) | ![](https://hackmd.io/_uploads/rkWMH-EGa.png) |
